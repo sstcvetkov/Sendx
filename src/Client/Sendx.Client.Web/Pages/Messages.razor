@@ -1,0 +1,100 @@
+﻿@page "/"
+@using Microsoft.Extensions.Logging
+@inject IMessageService Service
+@inject ILogger<Messages> Logger
+
+<h1>Server messages <button class="btn btn-primary" @onclick="Reload">Reload</button></h1>
+
+@if (_messages != null)
+{
+	<table class="table">
+		<thead>
+		<tr>
+			<th>Client IP</th>
+			<th>Recieved</th>
+			<th>Content</th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var message in _messages)
+		{
+			<tr>
+				<td>@message.ClientIp</td>
+				<td>@message.Created.ToString("MM.dd.yyyy HH:mm:ss.fff")</td>
+				<td>@message.Content</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+	if (_isPaged || _page != 0)
+	{
+		<nav style="">
+			<ul class="pagination">
+				<li class="page-item @(_page > 0 ? "" : "disabled" )">
+					<a class="page-link" href="#" tabindex="-1"
+					   @onclick="Previous">Previous</a>
+				</li>
+				<li class="page-item active">
+					<a class="page-link" href="#">@(_page+1)<span class="sr-only">(current)</span></a>
+				</li>
+				<li class="page-item @(_data.Count > _size ? "" : "disabled" )">
+					<a class="page-link" href="#" @onclick="Next">Next</a>
+				</li>
+			</ul>
+		</nav>
+	}
+	
+}
+else if (_loadFailed)
+{
+    <h5>Sorry, we could not load data, please try again later.</h5>
+}
+else
+{
+    <h5>Loading...</h5>
+}
+
+
+@code {
+	private ICollection<Message> _data = new List<Message>();
+	private IEnumerable<Message> _messages;
+	bool _loadFailed;
+	bool _isPaged;
+	int _size = 15;
+	int _page;
+	bool _hasPrevious;
+	bool _hasNext;
+	
+	protected override async Task OnParametersSetAsync()
+	{
+		await Reload();
+	}
+	
+	private async Task Reload()
+	{
+		try
+		{
+			_loadFailed = false;
+			_data = await Service.GetMessages(_page, _size+1);
+			_isPaged = _data.Count > _size;
+			_messages = _data.Take(_size);
+		}
+		catch (Exception e)
+		{
+			_loadFailed = true;
+			Logger.LogError(e, "Failed to load messages");
+		}
+	}
+	
+	private async Task Previous()
+	{
+		_page--;
+		await Reload();
+	}
+	
+	private async Task Next()
+	{
+		_page++;
+		await Reload();
+	}
+}
