@@ -76,6 +76,7 @@ namespace Sendx.Client.Cli
 			}
 			catch(LiteException e)
 			{
+				Log.Debug("Credentials are needed");
 				if (e.Message == "This data file is encrypted and needs a password to open")
 					return true;
 				throw;
@@ -126,10 +127,10 @@ namespace Sendx.Client.Cli
 		private static void InitialiseUser()
 		{
 			Log.Debug("User initialization...");
-			if (!IsDataBaseNeedCredentials()) 
+			if (IsDataBaseExists() && !IsDataBaseNeedCredentials()) 
 				return;
 			
-			Log.Debug("Credentials are needed");
+			
 			Console.WriteLine("Please enter password for local data encryption(default empty):");
 			var user = new User {Password = Console.ReadLine()};
 			while (true)
@@ -153,6 +154,17 @@ namespace Sendx.Client.Cli
 			}
 			Log.Information("User has entered credentials");
 			_user = user;
+		}
+
+		private static bool IsDataBaseExists()
+		{
+			if (File.Exists("local.db"))
+			{
+				Log.Debug("Database exists");
+				return true;
+			}
+
+			return false;
 		}
 
 		private static void InitialiseMessenger()
