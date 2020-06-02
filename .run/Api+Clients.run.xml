@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Api+Clients" type="CompoundRunConfigurationType">
+    <toRun name="Client.Cli" type="DotNetProject" />
+    <toRun name="Client.Web" type="DotNetProject" />
+    <toRun name="Api.Messages" type="DotNetProject" />
+    <method v="2" />
+  </configuration>
+</component>
